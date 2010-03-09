@@ -99,7 +99,8 @@ function enter()
 # run a semi-interactive command with this system
 function cmd()
 {
-	#echo "$ $1"			# see the command (normal)
+	input=$1
+	#echo "$ $input"		# see the command (normal)
 	#echo -n "$ "			# show the prompt
 	#echo -en "\033[34m$ \033[0m"	# coloured prompt
 					# show users their prompt instead!
@@ -111,13 +112,13 @@ function cmd()
 	echo -n "$(bash -i <<<$'\nexit' 2>&1 > /dev/null | head -n 1)"
 	# type out each letter of the command. homebrew heuristic for timing.
 	skip=false			# initialize or reset the skip
-	for i in `seq 0 ${#1}`; do
+	for i in `seq 0 ${#input}`; do
 		if $skip; then		# echo what's left and skip the wait...
-			echo -n "${1:$i}"
+			echo -n "${input:$i}"
 			break
 		fi
 
-		echo -n "${1:$i:1}"	# variable is $1, and length is 1
+		echo -n "${input:$i:1}"	# variable is $input, and length is 1
 		let "sec = $RANDOM % 5"	# random time to emulate human typing
 		sec=`echo $sec / 20 | bc -l`
 		#sleep 0.1s		# sleep (normal)
@@ -130,7 +131,7 @@ function cmd()
 	read -s				# wait for a keypress
 	# TODO: we could run different things based on keypress; eg: edit, skip
 	echo ""				# looks like [ENTER] was pressed
-	eval $1				# execute the command (eval is needed!)
+	eval $input			# execute the command (eval is needed!)
 }
 
 
