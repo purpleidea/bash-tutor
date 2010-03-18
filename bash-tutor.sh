@@ -26,7 +26,7 @@
 # This script would like to give props to the [A|L]GPL licenses and typescript.
 #
 # EXAMPLE:
-# ./bash\ tutor.sh [-s <typescript>] <tutorial filename>
+# ./bash-tutor.sh [-s <typescript>] <tutorial filename>
 # press [ENTER] after each command is typed to run it
 # press any key while command is typing to quick skip through typing animation
 # [script commands and output follows]
@@ -34,9 +34,21 @@
 # NOTE:	Be warned that scripts *actually* execute the commands, they don't sim.
 
 # TODO: add pexpect style interactive style editing... kind of like tryruby.org
+# HMMM: can this be done with 'read -e' and/or 'read -i'? investigate some more
+
+# TODO: catch ^C (control-c) and offer to quit the tutorial or continue on...
+
+# FIXME: if we run a script, will the namespaces (variables) conflict or clash?
 
 NAME=`basename "$0" .sh`
-VERSION="0.1"
+VERSION="0.2"
+# XXX... clean up this area...
+#MODE="source"
+#MODE="read"
+ERR='syntax error: '
+EOF='unexpected end of file'
+TEMPFILE=`tempfile`			# XXX: for my bash hack!
+trap "if [ -e $TEMPFILE ]; then rm $TEMPFILE; fi" 0
 
 # simple usage function
 function usage()
@@ -97,9 +109,10 @@ function enter()
 
 
 # run a semi-interactive command with this system
+declare -a stack			# initialize the cmd stack as an array!
 function cmd()
 {
-	input=$1
+	input="$1"
 	#echo "$ $input"		# see the command (normal)
 	#echo -n "$ "			# show the prompt
 	#echo -en "\033[34m$ \033[0m"	# coloured prompt
@@ -109,7 +122,9 @@ function cmd()
 	# /usr/share/doc/bash/examples/loadables/ and might let us use the fast
 	# c PS1 parser for use in our scripts to speed this slow bottleneck up?
 					# this functionality counts as style!
-	echo -n "$(bash -i <<<$'\nexit' 2>&1 > /dev/null | head -n 1)"
+	if [ ${#stack[*]} -eq 0 ]; then	# don't show PS1 if stack has elements!
+		echo -n "$(bash -i <<<$'\nexit' 2>&1 > /dev/null | head -n 1)"
+	fi
 	# type out each letter of the command. homebrew heuristic for timing.
 	skip=false			# initialize or reset the skip
 	for i in `seq 0 ${#input}`; do
@@ -123,15 +138,59 @@ function cmd()
 		sec=`echo $sec / 20 | bc -l`
 		#sleep 0.1s		# sleep (normal)
 		#sleep "$sec"s		# sleep fraction
-		read -s -n 1 -t $sec x	# sleep w/ keypress-skip via read (wow)
+					# sleep w/ keypress-skip via read (wow)
+					# /dev/tty is required for nested reads
+		read -s -n 1 -t $sec x < /dev/tty
 		# NOTE: if sec is 0, then it will be unlikely that the key hits
 		if [ $? -eq 0 ]; then skip=true; fi
 
 	done
-	read -s				# wait for a keypress
+	read -s	< /dev/tty		# wait for a keypress
 	# TODO: we could run different things based on keypress; eg: edit, skip
 	echo ""				# looks like [ENTER] was pressed
-	eval $input			# execute the command (eval is needed!)
+
+					# process the stack if it has elements!
+	if [ ${#stack[*]} -eq 0 ]; then
+		exec="$input"
+	else
+		_ifs=$IFS		# save
+		IFS=$'\n'		# this is the magic to join by newline!
+		t="$stack"		# temporary variable
+		t[${#t[*]}]="$input"	# add $input onto the stack to evaluate
+		exec="${t[*]}"
+		IFS=$_ifs		# restore
+	fi
+
+	# XXX: since eval is running in a subshell, the environ doesn't change!
+	#result=$( (eval "$exec") 2>&1 )# execute the command (eval is needed!)
+	# XXX: this whole script is a BIG hack. that's okay. the below usage of
+	# a TEMPFILE to do our dirty work is a BAD hack. that's not okay. FIXME
+	# it would be nice to have all the execution occur in a common subshell
+	{ eval "$exec"; } &> $TEMPFILE	# testing
+	status=$?			# save the command exit status in a var
+	result=`cat $TEMPFILE`
+
+	# FIXME: used awk because couldn't get: 'expr index' to work correctly!
+	found=`awk -v a="$result" -v b="$ERR" 'BEGIN{print index(a,b)}'`
+	let s="$found + ${#ERR} - 1"
+	if [ "${result:$s:${#EOF}}" = "$EOF" ]; then e=true; else e=false; fi
+
+	if [ $status -ne 0 ]; then	# decide what to do based on the result
+		if $e; then		# expect a continuation. save on stack.
+			stack[${#stack[*]}]="$input"
+			#echo -n '> '	# a normal prompt would look like this.
+			echo -n "$PS2"	# TODO: use shell's real live PS2
+		else
+			# TODO: popup a fail message because the command failed
+			echo -n "$result"
+			if [ ! "$result" = "" ]; then echo ""; fi
+		fi
+	else
+		stack=()		# clear the stack since commands worked
+		echo -n "$result"	# display out the intended result text!
+		# print out the newline that dissapears under this circumstance
+		if [ ! "$result" = "" ]; then echo ""; fi
+	fi
 }
 
 
@@ -144,6 +203,7 @@ fi
 # show version
 if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then
 	echo -e `blue "$NAME"`", version $VERSION"
+	# FIXME: pull the license from the header of this file automatically...
 	# the minus in the heredoc title suppresses leading tabs (-:
 	# there's no reason your code has to look like sh_t and not be indented
 	cat <<-LICENSE
@@ -185,8 +245,26 @@ if [ "$1" = "" ] || [ ! -e "$1" ]; then
 fi
 
 # run the tutorial
-# TODO: sourcing of a regular script file could cause it to get parsed and sent
-# into this script with cmd() calls prepended on valid commands. magic comments
-# could be parsed to add in things like the enter() and msg() calls.
-source "$1"
+#source "$1"				# old (simple) way to source the script
+_ifs=$IFS
+IFS=$'\n'
+while read line
+do
+	# skip blank lines
+	if [ "$line" = "" ]; then
+		continue
+	fi
+
+	# skip comments
+	# TODO: add magic comments to be able to add in the enter and msg calls
+	if [ "${line:0:1}" = '#' ]; then
+		#echo 'comment line'
+		continue
+	fi
+
+	cmd "$line"
+
+# TODO: we might be able to load the entire file into an arr with bash4 mapfile
+done < "$1"				# send in the file that cmd() will exec
+IFS=$_ifs
 
