@@ -1,12 +1,89 @@
+# makefile for bash-tutor.sh Interactive live bash tutorial script with style.
+# Copyright (C) 2010  James Shubin
+# Written by James Shubin <purpleidea@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# name of this project
+NAME := $(shell basename `pwd`)
+
+# version of the program
+VERSION := $(shell cat VERSION)
+
+# where am i ?
+PWD := $(shell pwd)
+
+# where does www source get pushed to and metadata file path
+WWW = $(PWD)/../www/code/$(NAME)/
+METADATA = $(WWW)/$(NAME)
+
+PREFIX = /usr/
 
 
 install:
-	sudo cp bash-tutor.sh /usr/bin/bash-tutor
-	sudo chmod ugo+x /usr/bin/bash-tutor
+	# script
+	sudo cp bash-tutor.sh $(PREFIX)bin/bash-tutor
+	sudo chmod ugo+x $(PREFIX)bin/bash-tutor
+	# docs
+	sudo mkdir -p $(PREFIX)share/doc/bash-tutor/
+	sudo cp -r examples/ $(PREFIX)share/doc/bash-tutor/
+
 
 uninstall:
-	sudo rm /usr/bin/bash-tutor
+	# remove script
+	if [ -e $(PREFIX)bin/bash-tutor ]; then
+		sudo rm $(PREFIX)bin/bash-tutor
+	fi
+	# remove docs
+	if [ -d $(PREFIX)share/doc/bash-tutor/ ]; then
+		sudo rm -r $(PREFIX)share/doc/bash-tutor/
+	fi
+
 
 purge: uninstall
 
+
+tar:
+	# split this up into multiple lines for readability
+	cd ..; \
+	tar	--exclude=old \
+		--exclude=play \
+		--exclude=.swp \
+		--exclude=.git \
+		--exclude=dist \
+		--bzip2 \
+		-cf $(NAME).tar.bz2 $(NAME)/
+
+	if [ -e ./dist/$(NAME)-$(VERSION).tar.bz2 ]; then \
+		echo version $(VERSION) already exists; \
+		rm ../$(NAME).tar.bz2; \
+	else \
+		mv ../$(NAME).tar.bz2 ./dist/$(NAME)-$(VERSION).tar.bz2; \
+		echo 'tar created successfully in dist/'; \
+	fi
+
+
+www: force
+	rsync -av dist/ $(WWW)
+	# empty the file
+	echo -n '' > $(METADATA)
+	cd $(WWW); \
+	for i in `ls *.bz2`; do \
+		echo $(NAME) $(VERSION) $$i >> $(METADATA); \
+	done
+
+
+# depend on this fake target to cause a target to always run
+force: ;
 
