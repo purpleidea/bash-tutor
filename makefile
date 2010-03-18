@@ -61,6 +61,7 @@ tar:
 		--exclude=play \
 		--exclude=.swp \
 		--exclude=.git \
+		--exclude=.gitignore \
 		--exclude=dist \
 		--bzip2 \
 		-cf $(NAME).tar.bz2 $(NAME)/
