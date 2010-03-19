@@ -33,21 +33,23 @@ PREFIX = /usr/
 
 install:
 	# script
-	sudo cp bash-tutor.sh $(PREFIX)bin/bash-tutor
-	sudo chmod ugo+x $(PREFIX)bin/bash-tutor
+	sudo cp $(NAME).sh $(PREFIX)bin/$(NAME)
+	sudo chmod ugo+x $(PREFIX)bin/$(NAME)
 	# docs
-	sudo mkdir -p $(PREFIX)share/doc/bash-tutor/
-	sudo cp -r examples/ $(PREFIX)share/doc/bash-tutor/
+	if [ -d $(PREFIX)share/doc/$(NAME)/ ]; then
+		sudo mkdir -p $(PREFIX)share/doc/$(NAME)/
+		sudo cp -r examples/ $(PREFIX)share/doc/$(NAME)/
+	fi
 
 
 uninstall:
 	# remove script
-	if [ -e $(PREFIX)bin/bash-tutor ]; then
-		sudo rm $(PREFIX)bin/bash-tutor
+	if [ -e $(PREFIX)bin/$(NAME) ]; then
+		sudo rm $(PREFIX)bin/$(NAME)
 	fi
 	# remove docs
-	if [ -d $(PREFIX)share/doc/bash-tutor/ ]; then
-		sudo rm -r $(PREFIX)share/doc/bash-tutor/
+	if [ -d $(PREFIX)share/doc/$(NAME)/ ]; then
+		sudo rm -r $(PREFIX)share/doc/$(NAME)/
 	fi
 
 
