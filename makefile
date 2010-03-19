@@ -54,7 +54,7 @@ uninstall:
 purge: uninstall
 
 
-tar:
+source:
 	# split this up into multiple lines for readability
 	cd ..; \
 	tar	--exclude=old \
@@ -70,8 +70,8 @@ tar:
 		echo version $(VERSION) already exists; \
 		rm ../$(NAME).tar.bz2; \
 	else \
-		mv ../$(NAME).tar.bz2 ./dist/$(NAME)-$(VERSION).tar.bz2; \
-		echo 'tar created successfully in dist/'; \
+		mv ../$(NAME).tar.bz2 ./dist/$(NAME)-$(VERSION).tar.bz2 && \
+		echo 'source tarball created successfully in dist/'; \
 	fi
 
 
