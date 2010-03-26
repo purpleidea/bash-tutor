@@ -1,4 +1,5 @@
-# makefile for bash-tutor.sh Interactive live bash tutorial script with style.
+#
+# Makefile for bash-tutor.sh Interactive live bash tutorial script with style.
 # Copyright (C) 2010  James Shubin
 # Written by James Shubin <purpleidea@gmail.com>
 #
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 # name of this project
 NAME := $(shell basename `pwd`)
 
@@ -30,8 +32,25 @@ METADATA = $(WWW)/$(NAME)
 
 PREFIX = /usr/
 
+# if someone runs make without a target, print some useful messages
+all:
+	# list the available targets and what they do
+	echo -e 'available targets:'
+	#echo -e '- clean:\tcleans up any files that can be generated again.'
+	echo -e '- install:\tinstalls this package on the machine.'
+	echo -e '- uninstall:\tuninstalls this package from the machine.'
+	echo -e '- purge:\tdelete all traces of the install from the machine.'
+	echo -e '- source:\tmake a source archive for distribution.'
+	echo -e '- www:\t\tput an archive on the local webserver.'
 
-install:
+
+# clean up any mess that can be generated
+clean: force
+	echo 'nothing to clean!'
+
+
+# this installs code to your machine
+install: clean
 	# script
 	sudo cp $(NAME).sh $(PREFIX)bin/$(NAME)
 	sudo chmod ugo+x $(PREFIX)bin/$(NAME)
@@ -42,6 +61,7 @@ install:
 	fi
 
 
+# uninstalls the package
 uninstall:
 	# remove script
 	if [ -e $(PREFIX)bin/$(NAME) ]; then
@@ -53,9 +73,12 @@ uninstall:
 	fi
 
 
+# purge any unwanted files
 purge: uninstall
+	echo 'nothing to purge!'
 
 
+# make a source package for distribution
 source:
 	# split this up into multiple lines for readability
 	cd ..; \
@@ -89,4 +112,8 @@ www: force
 
 # depend on this fake target to cause a target to always run
 force: ;
+
+
+# this target silences echoing of any target which has it as a dependency.
+.SILENT:
 
