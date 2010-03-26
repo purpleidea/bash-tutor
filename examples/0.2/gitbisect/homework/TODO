@@ -1,0 +1,10 @@
+TODO
+
+1) Keep homework/ directory in git too. Pull files out instead of copying out.
+
+2) Get pep8 tests working properly.
+
+3) Add a makefile and package the tutorial itself.
+
+NOTE: I've added this TODO file quickly to add substance to my git log
+
