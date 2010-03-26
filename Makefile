@@ -1,5 +1,5 @@
 #
-# Makefile for bash-tutor.sh Interactive live bash tutorial script with style.
+# Makefile for bash-tutor Interactive live bash tutorial script with style.
 # Copyright (C) 2010  James Shubin
 # Written by James Shubin <purpleidea@gmail.com>
 #
@@ -26,7 +26,10 @@ VERSION := $(shell cat VERSION)
 # where am i ?
 PWD := $(shell pwd)
 
-# where does www source get pushed to and metadata file path
+# executables
+RMTOOL = rm -i
+
+# www source and metadata paths
 WWW = $(PWD)/../www/code/$(NAME)/
 METADATA = $(WWW)/$(NAME)
 
@@ -39,9 +42,10 @@ all:
 	#echo -e '- clean:\tcleans up any files that can be generated again.'
 	echo -e '- install:\tinstalls this package on the machine.'
 	echo -e '- uninstall:\tuninstalls this package from the machine.'
-	echo -e '- purge:\tdelete all traces of the install from the machine.'
+	#echo -e '- purge:\tdelete all traces of the install from the machine.'
 	echo -e '- source:\tmake a source archive for distribution.'
 	echo -e '- www:\t\tput an archive on the local webserver.'
+	#echo -e '- man:\t\tbuild the man pages and then view them.'
 
 
 # clean up any mess that can be generated
@@ -65,11 +69,11 @@ install: clean
 uninstall:
 	# remove script
 	if [ -e $(PREFIX)bin/$(NAME) ]; then
-		sudo rm $(PREFIX)bin/$(NAME)
+		sudo $(RMTOOL) $(PREFIX)bin/$(NAME)
 	fi
 	# remove docs
 	if [ -d $(PREFIX)share/doc/$(NAME)/ ]; then
-		sudo rm -r $(PREFIX)share/doc/$(NAME)/
+		sudo $(RMTOOL) -r $(PREFIX)share/doc/$(NAME)/
 	fi
 
 
@@ -79,7 +83,7 @@ purge: uninstall
 
 
 # make a source package for distribution
-source:
+source: clean
 	# split this up into multiple lines for readability
 	cd ..; \
 	tar	--exclude=old \
