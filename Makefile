@@ -32,8 +32,10 @@ RMTOOL = rm -i
 # www source and metadata paths
 WWW = $(PWD)/../www/code/$(NAME)/
 METADATA = $(WWW)/$(NAME)
+EXT = .tar.bz2
 
 PREFIX = /usr/
+
 
 # if someone runs make without a target, print some useful messages
 all:
@@ -93,25 +95,29 @@ source: clean
 		--exclude=.gitignore \
 		--exclude=dist \
 		--bzip2 \
-		-cf $(NAME).tar.bz2 $(NAME)/
-
-	if [ -e ./dist/$(NAME)-$(VERSION).tar.bz2 ]; then \
+		-cf $(NAME)$(EXT) $(NAME)/
+	\
+	if [ -e ./dist/$(NAME)-$(VERSION)$(EXT) ]; then \
 		echo version $(VERSION) already exists; \
-		rm ../$(NAME).tar.bz2; \
+		rm ../$(NAME)$(EXT); \
 	else \
-		mv ../$(NAME).tar.bz2 ./dist/$(NAME)-$(VERSION).tar.bz2 && \
+		mv ../$(NAME)$(EXT) ./dist/$(NAME)-$(VERSION)$(EXT) && \
 		echo 'source tarball created successfully in dist/'; \
 	fi
 
 
 www: force
-	rsync -av dist/ $(WWW)
+	rsync -avz --delete dist/ $(WWW)
 	# empty the file
 	echo -n '' > $(METADATA)
 	cd $(WWW); \
-	for i in `ls *.bz2`; do \
-		echo $(NAME) $(VERSION) $$i >> $(METADATA); \
-	done
+	for i in *$(EXT); do \
+		b=$$(basename $$i $(EXT)); \
+		V=$$(echo -n $$(basename "`echo -n "$$b" | rev`" \
+		"`echo -n "$(NAME)-" | rev`") | rev); \
+		echo $(NAME) $$V $$i >> $(METADATA); \
+	done; \
+	sort -rV -k 2 -o $(METADATA) $(METADATA)	# sort by version key
 
 
 # depend on this fake target to cause a target to always run
