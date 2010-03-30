@@ -117,7 +117,7 @@ www: force
 		"`echo -n "$(NAME)-" | rev`") | rev); \
 		echo $(NAME) $$V $$i >> $(METADATA); \
 	done; \
-	sort -rV -k 2 -o $(METADATA) $(METADATA)	# sort by version key
+	sort -V -k 2 -o $(METADATA) $(METADATA)		# sort by version key
 
 
 # depend on this fake target to cause a target to always run
