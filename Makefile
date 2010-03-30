@@ -107,7 +107,8 @@ source: clean
 
 
 www: force
-	rsync -avz --delete dist/ $(WWW)
+	# rsync directories so they are equivalent in terms of files with: $EXT
+	rsync -avz --include=*$(EXT) --exclude='*' --delete dist/ $(WWW)
 	# empty the file
 	echo -n '' > $(METADATA)
 	cd $(WWW); \
