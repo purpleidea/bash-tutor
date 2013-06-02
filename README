@@ -1,8 +1,8 @@
+This is a little script that I wrote to demo live interactive bash sessions.
 Run "make install" to install bash-tutor and "make uninstall" to remove.
 See the comments in the header of bash-tutor.sh for basic usage.
 Some examples are provided in the examples/ subdirectory.
 Please be warned that scripts run with bash-tutor actually get executed!
 Use at your own risk!
-Submit comments, suggestions and patches to: James <purpleidea@gmail.com>
-Latest releases available from: http://www.cs.mcgill.ca/~james/
+Submit comments, suggestions and patches to: James Shubin <bash-tutor@shubin.ca>
 

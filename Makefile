@@ -58,7 +58,7 @@ clean: force
 # this installs code to your machine
 install: clean
 	# script
-	sudo cp $(NAME).sh $(PREFIX)bin/$(NAME)
+	sudo cp bin/$(NAME).sh $(PREFIX)bin/$(NAME)
 	sudo chmod ugo+x $(PREFIX)bin/$(NAME)
 	# docs
 	if [ -d $(PREFIX)share/doc/$(NAME)/ ]; then

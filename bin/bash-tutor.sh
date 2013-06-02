@@ -1,8 +1,8 @@
 #!/bin/bash -i
-					# -i is needed so that PS1 is available
+# -i is needed so that PS1 is available
 # bash-tutor.sh Interactive live bash tutorial script with style.
-# Copyright (C) 2010  James Shubin
-# Written by James Shubin <purpleidea@gmail.com>
+# Copyright (C) 2010+  James Shubin
+# Written by James Shubin <james@shubin.ca>
 # Thanks to ferret@gentoo/user/ferret on #bash@freenode for PS1 parsing answer.
 #
 # This program is free software: you can redistribute it and/or modify
